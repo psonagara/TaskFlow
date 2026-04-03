@@ -28,14 +28,14 @@ public class AuthRestController {
 
 	@PostMapping(IMappingConstants.REGISTER_PATH)
 	public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-		LOG.info("Register Request Received: " + request);
+		LOG.debug("Register Request Received: " + request);
 		String message = authService.register(request);
 		return CommonUtil.prepareResponseWithMessage(message, HttpStatus.OK);
 	}
 	
 	@PostMapping(IMappingConstants.LOGIN_PATH)
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-		LOG.info("Login Request Received: " + request);
+		LOG.debug("Login Request Received: " + request);
 		LoginResponse response = authService.login(request);
 		return CommonUtil.prepareResponseWithContent(response, HttpStatus.OK);
 	}
