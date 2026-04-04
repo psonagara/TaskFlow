@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — TaskFlow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
+    .input-field { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+    .input-field::placeholder { color: rgba(255,255,255,0.4); }
+    .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+  <div class="grid-bg"></div>
+
+  <!-- Glow orbs -->
+  <div class="fixed top-20 left-1/4 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-20 right-1/4 w-64 h-64 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="relative w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-3">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/40">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-white tracking-tight">TaskFlow</span>
+      </div>
+      <p class="text-slate-400 text-sm">Sign in to manage your projects</p>
+    </div>
+
+    <!-- Card -->
+    <div class="glass rounded-2xl p-8 shadow-2xl">
+      <h1 class="text-xl font-bold text-white mb-6">Welcome back</h1>
+
+      <form id="login-form" novalidate>
+        <!-- Email -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+          <input type="email" id="email" placeholder="you@example.com"
+            class="input-field w-full rounded-xl px-4 py-3 text-sm transition-all duration-200" />
+          <p class="text-red-400 text-xs mt-1 hidden" id="email-err">Please enter a valid email.</p>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+          <div class="relative">
+            <input type="password" id="password" placeholder="••••••••"
+              class="input-field w-full rounded-xl px-4 py-3 text-sm pr-12 transition-all duration-200" />
+            <button type="button" id="toggle-pwd" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+          <p class="text-red-400 text-xs mt-1 hidden" id="password-err">Password is required.</p>
+        </div>
+
+        <button type="submit" id="login-btn"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30">
+          <span>Sign In</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-slate-400 mt-6">
+        Don't have an account?
+        <a href="register.html" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">Create one</a>
+      </p>
+    </div>
+
+    <!-- Demo hint -->
+    <div class="mt-4 glass rounded-xl px-4 py-3 text-xs text-slate-400 text-center">
+      <div style="max-width: 600px; margin: 20px auto; padding: 15px; border-radius: 10px; 
+            background-color: #f0f8ff; border: 1px solid #cce7ff; color: #003366; 
+            font-family: Arial, sans-serif; box-shadow: 0px 3px 6px rgba(0,0,0,0.1);">
+
+		<h4 style="margin-bottom: 10px; color: #0066cc;">ℹ️ Notice for Visitors</h4>
+		<p style="margin: 5px 0;">
+			⏳ Our backend runs on a free hosting service. <br/>
+      It may take around <b>2 minutes</b> to process your
+			<b>first request</b> due to server startup time.
+		</p>
+		<p style="margin: 5px 0;">
+			⚡ Once the server is active, <b>subsequent requests will be processed instantly within seconds</b>.
+		</p>
+
+		<hr>
+		<h5 style="margin: 10px 0; color: #004080;">🔑 Credentials</h5>
+		<ul style="margin: 0; padding-left: 18px;">
+			<li><code>rohan.mehta@taskflow.in</code> / <code>123456</code></li>
+			<li> → OR You Can Creat One Using  → <a href="register.html" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">Create one</a> </li>
+		</ul>
+	</div>
+      <span class="text-blue-400 mono">Thank You</span>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (Auth.getToken()) window.location.href = "dashboard.html";
+
+    // Toggle password
+    $("#toggle-pwd").on("click", function () {
+      const input = $("#password");
+      input.attr("type", input.attr("type") === "password" ? "text" : "password");
+    });
+
+    // Form submit
+    $("#login-form").on("submit", function (e) {
+      e.preventDefault();
+      let valid = true;
+
+      const email = $("#email").val().trim();
+      const password = $("#password").val().trim();
+
+      // Validate email
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRe.test(email)) {
+        $("#email-err").removeClass("hidden");
+        valid = false;
+      } else {
+        $("#email-err").addClass("hidden");
+      }
+
+      // Validate password
+      if (!password) {
+        $("#password-err").removeClass("hidden");
+        valid = false;
+      } else {
+        $("#password-err").addClass("hidden");
+      }
+
+      if (!valid) return;
+
+      const btn = $("#login-btn");
+      btn.prop("disabled", true).html(`
+        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <span>Signing in...</span>
+      `);
+
+      $.ajax({
+        url: BASE_URL + "/auth/login",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ email, password }),
+        success: function (res) {
+          Auth.setToken(res.content.token);
+          Auth.setUser(res.content.user || { email });
+          Toast.show("Login successful! Redirecting...", "success");
+          setTimeout(() => (window.location.href = "dashboard.html"), 800);
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || "Invalid credentials.";
+          Toast.show(msg, "error");
+          btn.prop("disabled", false).html(`<span>Sign In</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`);
+        },
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+/* Smart Task Management System — Custom Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+* { font-family: 'DM Sans', sans-serif; }
+code, pre, .mono { font-family: 'DM Mono', monospace; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Kanban drag */
+.task-card.dragging { opacity: 0.4; }
+.kanban-col.drag-over { background: #eff6ff; border-color: #3b82f6; }
+
+/* Sidebar */
+.sidebar-link.active { background: #eff6ff; color: #2563eb; }
+.sidebar-link.active .sidebar-icon { color: #2563eb; }
+
+/* Transition helpers */
+.fade-in { animation: fadeIn 0.25s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Modal */
+.modal-backdrop { animation: backdropIn 0.2s ease forwards; }
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-card { animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+/* Kanban columns */
+.kanban-col {
+  min-height: 200px;
+  transition: background 0.2s, border-color 0.2s;
+  border: 2px dashed transparent;
+  border-radius: 1rem;
+}
+
+/* Form focus */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* Priority dot */
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.priority-dot.HIGH { background: #ef4444; }
+.priority-dot.MEDIUM { background: #f59e0b; }
+.priority-dot.LOW { background: #10b981; }
+
+/* Checkbox custom */
+.subtask-check { accent-color: #2563eb; width: 16px; height: 16px; cursor: pointer; }

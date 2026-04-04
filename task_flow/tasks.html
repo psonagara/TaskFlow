@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Tasks — TaskFlow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div id="app"></div>
+
+  <!-- Task Detail Modal (reuse pattern) -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-card" id="detail-content"></div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error("unauth");
+
+    const { sidebarHtml, topbarHtml } = renderLayout("tasks");
+
+    let currentPage = 0;
+    const PAGE_SIZE = 10;
+    let totalPages = 0;
+    let totalElements = 0;
+
+    $("#app").html(`
+      ${sidebarHtml}
+      <div class="lg:ml-64 flex flex-col min-h-screen">
+        ${topbarHtml}
+        <main class="flex-1 p-4 lg:p-8">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-8 fade-in">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">My Tasks</h1>
+              <p class="text-slate-500 text-sm mt-0.5" id="task-count-label">Loading...</p>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm mb-6 fade-in">
+            <div class="flex flex-wrap gap-3 items-center">
+              <div class="relative flex-1 min-w-[200px]">
+                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" id="search-input" placeholder="Search tasks..." class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:border-blue-400 transition-all" />
+              </div>
+              <select id="filter-status" class="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-blue-400 transition-all bg-white">
+                <option value="">All Statuses</option>
+                <option value="TODO">To Do</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="IN_REVIEW">In Review</option>
+                <option value="DONE">Done</option>
+              </select>
+              <select id="filter-priority" class="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-blue-400 transition-all bg-white">
+                <option value="">All Priorities</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
+              <input type="date" id="filter-due" class="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-blue-400 transition-all bg-white" title="Filter by due date" />
+              <button id="clear-filters" class="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">Clear</button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden fade-in">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px]">
+                <thead>
+                  <tr class="border-b border-slate-100 bg-slate-50">
+                    <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Task</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+                    <th class="text-left px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Due Date</th>
+                    <th class="px-4 py-3.5"></th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-tbody" class="divide-y divide-slate-100">
+                  <!-- Skeleton -->
+                  ${[1,2,3,4,5].map(() => `
+                    <tr class="animate-pulse">
+                      <td class="px-6 py-4"><div class="h-4 bg-slate-100 rounded w-3/4 mb-1.5"></div><div class="h-3 bg-slate-100 rounded w-1/2"></div></td>
+                      <td class="px-4 py-4"><div class="h-4 bg-slate-100 rounded w-20"></div></td>
+                      <td class="px-4 py-4"><div class="h-5 bg-slate-100 rounded-full w-20"></div></td>
+                      <td class="px-4 py-4"><div class="h-5 bg-slate-100 rounded-full w-16"></div></td>
+                      <td class="px-4 py-4"><div class="h-4 bg-slate-100 rounded w-24"></div></td>
+                      <td class="px-4 py-4"></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100" id="pagination-bar">
+              <span class="text-sm text-slate-400" id="pagination-info">Loading...</span>
+              <div class="flex items-center gap-2" id="pagination-btns"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    `);
+
+    initSidebar();
+    initUserNav();
+
+    function loadTasks(page = 0) {
+      currentPage = page;
+      const params = {
+        assignedTo: "me",
+        page,
+        size: PAGE_SIZE,
+      };
+
+      const status = $("#filter-status").val();
+      const priority = $("#filter-priority").val();
+      const due = $("#filter-due").val();
+      const search = $("#search-input").val().trim();
+
+      if (status) params.status = status;
+      if (priority) params.priority = priority;
+      if (due) params.dueDate = due;
+      if (search) params.search = search;
+
+      API.get("/tasks", params).then(function(res) {
+        res = res.content;
+        const tasks = res.tasksList || res || [];
+        totalPages = res.totalPages || 1;
+        totalElements = res.totalElements || tasks.length;
+
+        $("#task-count-label").text(totalElements + " task" + (totalElements !== 1 ? "s" : "") + " assigned to you");
+        renderTable(tasks);
+        renderPagination();
+      }).catch(() => {
+        $("#tasks-tbody").html(`<tr><td colspan="6">${emptyState("Failed to load tasks")}</td></tr>`);
+      });
+    }
+
+    function renderTable(tasks) {
+      const $tbody = $("#tasks-tbody").empty();
+      if (!tasks.length) {
+        $tbody.html(`<tr><td colspan="6" class="py-4">${emptyState("No tasks found", "Try adjusting your filters")}</td></tr>`);
+        return;
+      }
+      tasks.forEach(t => {
+        const overdue = isOverdue(t.dueDate) && t.status !== "DONE";
+        $tbody.append(`
+          <tr class="hover:bg-slate-50 transition-colors cursor-pointer task-row fade-in" data-id="${t.id}">
+            <td class="px-6 py-4">
+              <p class="text-sm font-semibold text-slate-800 mb-0.5">${t.title || "Untitled"}</p>
+              ${t.description ? `<p class="text-xs text-slate-400 truncate max-w-[300px]">${t.description}</p>` : ""}
+            </td>
+            <td class="px-4 py-4">
+              <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">${t.project?.name || "—"}</span>
+            </td>
+            <td class="px-4 py-4">${statusBadge(t.status)}</td>
+            <td class="px-4 py-4">${priorityBadge(t.priority)}</td>
+            <td class="px-4 py-4">
+              <span class="text-sm ${overdue ? "text-red-500 font-semibold" : "text-slate-500"}">${formatDate(t.dueDate)}</span>
+              ${overdue ? `<span class="ml-1 text-xs text-red-400 font-medium">Overdue</span>` : ""}
+            </td>
+            <td class="px-4 py-4">
+              <button class="view-task-btn p-2 rounded-xl text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors" data-id="${t.id}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    function renderPagination() {
+      const start = currentPage * PAGE_SIZE + 1;
+      const end = Math.min((currentPage + 1) * PAGE_SIZE, totalElements);
+      $("#pagination-info").text(`Showing ${start}–${end} of ${totalElements}`);
+
+      const $btns = $("#pagination-btns").empty();
+
+      // Prev
+      $btns.append(`
+        <button class="page-btn px-3 py-1.5 rounded-xl text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" data-page="${currentPage - 1}" ${currentPage === 0 ? "disabled" : ""}>
+          ← Prev
+        </button>
+      `);
+
+      // Pages
+      const maxPages = Math.min(totalPages, 5);
+      let start_p = Math.max(0, currentPage - 2);
+      let end_p = Math.min(totalPages - 1, start_p + maxPages - 1);
+      if (end_p - start_p < maxPages - 1) start_p = Math.max(0, end_p - maxPages + 1);
+
+      for (let i = start_p; i <= end_p; i++) {
+        const active = i === currentPage;
+        $btns.append(`
+          <button class="page-btn w-9 h-9 rounded-xl text-sm font-semibold transition-colors ${active ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "text-slate-600 hover:bg-slate-100 border border-slate-200"}" data-page="${i}">${i + 1}</button>
+        `);
+      }
+
+      // Next
+      $btns.append(`
+        <button class="page-btn px-3 py-1.5 rounded-xl text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" data-page="${currentPage + 1}" ${currentPage >= totalPages - 1 ? "disabled" : ""}>
+          Next →
+        </button>
+      `);
+
+      $(".page-btn:not([disabled])").on("click", function() { loadTasks(parseInt($(this).data("page"))); });
+    }
+
+    // Task detail modal
+    function openTaskDetail(taskId) {
+      $("#detail-modal").removeClass("hidden").addClass("flex");
+      $("#detail-content").html(`<div class="flex items-center justify-center py-20"><div class="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>`);
+
+      API.get("/tasks/" + taskId).then(function(task) {
+        task = task.content;
+        const overdue = isOverdue(task.dueDate) && task.status !== "DONE";
+        $("#detail-content").html(`
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-2xl z-10">
+            <div class="flex items-center gap-2">${priorityBadge(task.priority)} ${statusBadge(task.status)}</div>
+            <button id="detail-close" class="p-2 rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 space-y-5">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800 mb-2">${task.title}</h2>
+              <p class="text-slate-500 text-sm leading-relaxed">${task.description || "<span class='italic text-slate-300'>No description</span>"}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-50 rounded-xl p-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Project</p>
+                <p class="text-sm font-semibold text-slate-700">${task.project?.name || "—"}</p>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Date</p>
+                <p class="text-sm font-semibold ${overdue ? "text-red-500" : "text-slate-700"}">${formatDate(task.dueDate)}</p>
+              </div>
+            </div>
+            <!-- Comments -->
+            <div>
+              <p class="text-sm font-semibold text-slate-700 mb-3">Comments</p>
+              <div class="space-y-3 mb-3">
+                ${(task.comments||[]).map(c => `
+                  <div class="flex gap-3">
+                    <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">${(c.user?.name||"?").substring(0,2).toUpperCase()}</div>
+                    <div class="flex-1 bg-slate-50 rounded-xl p-3">
+                      <p class="text-xs font-semibold text-slate-500 mb-1">${c.user?.name || "User"}</p>
+                      <p class="text-sm text-slate-600">${c.content}</p>
+                    </div>
+                  </div>
+                `).join("") || `<p class="text-slate-400 text-sm italic">No comments yet.</p>`}
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="new-comment" placeholder="Write a comment..." class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-blue-400 transition-all" />
+                <button id="add-comment-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors" data-task-id="${task.id}">Post</button>
+              </div>
+            </div>
+            ${task.projectId ? `<a href="board.html?projectId=${task.projectId}" class="inline-flex items-center gap-2 text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors">View on Board →</a>` : ""}
+          </div>
+        `);
+
+        $("#detail-close").on("click", () => $("#detail-modal").addClass("hidden").removeClass("flex"));
+        $("#add-comment-btn").on("click", function() {
+          const content = $("#new-comment").val().trim();
+          const tid = $(this).data("task-id");
+          if (!content) return;
+          API.post("/tasks/" + tid + "/comments", { content }).then(function() {
+            Toast.show("Comment posted!", "success");
+            openTaskDetail(tid);
+          });
+        });
+      });
+    }
+
+    // Events
+    $(document).on("click", ".view-task-btn", function(e) { e.stopPropagation(); openTaskDetail($(this).data("id")); });
+    $(document).on("click", ".task-row", function() { openTaskDetail($(this).data("id")); });
+    $("#detail-modal").on("click", function(e) { if ($(e.target).is(this)) $(this).addClass("hidden").removeClass("flex"); });
+
+    // Filter events
+    let filterTimer;
+    $("#search-input").on("input", function() { clearTimeout(filterTimer); filterTimer = setTimeout(() => loadTasks(0), 350); });
+    $("#filter-status, #filter-priority, #filter-due").on("change", () => loadTasks(0));
+    $("#clear-filters").on("click", function() {
+      $("#filter-status, #filter-priority, #filter-due").val("");
+      $("#search-input").val("");
+      loadTasks(0);
+    });
+
+    loadTasks(0);
+  </script>
+</body>
+</html>

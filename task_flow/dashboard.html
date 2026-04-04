@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — TaskFlow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div id="app"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    if (!Auth.requireAuth()) throw new Error("unauth");
+
+    const { sidebarHtml, topbarHtml } = renderLayout("dashboard");
+    $("#app").html(`
+      ${sidebarHtml}
+      <div class="lg:ml-64 flex flex-col min-h-screen">
+        ${topbarHtml}
+        <main class="flex-1 p-4 lg:p-8">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-8 fade-in">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+              <p class="text-slate-500 text-sm mt-0.5">Here's what's happening today</p>
+            </div>
+            <div class="text-sm text-slate-400">${new Date().toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</div>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 fade-in">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Projects</span>
+              </div>
+              <p class="text-3xl font-bold text-slate-800" id="stat-projects">—</p>
+              <p class="text-slate-400 text-sm mt-1">Total Projects</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 fade-in" style="animation-delay:0.05s">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
+                  <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">Tasks</span>
+              </div>
+              <p class="text-3xl font-bold text-slate-800" id="stat-tasks">—</p>
+              <p class="text-slate-400 text-sm mt-1">My Tasks</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 fade-in" style="animation-delay:0.1s">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center">
+                  <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">Urgent</span>
+              </div>
+              <p class="text-3xl font-bold text-slate-800" id="stat-due">—</p>
+              <p class="text-slate-400 text-sm mt-1">Due Today</p>
+            </div>
+          </div>
+
+          <!-- Bottom grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Recent Projects -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 fade-in" style="animation-delay:0.15s">
+              <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h2 class="font-bold text-slate-800">Recent Projects</h2>
+                <a href="projects.html" class="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors">View all →</a>
+              </div>
+              <div id="recent-projects" class="p-4 space-y-2">
+                <!-- loaded via JS -->
+                <div class="flex items-center gap-3 p-3 animate-pulse">
+                  <div class="w-9 h-9 rounded-xl bg-slate-100"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 bg-slate-100 rounded w-2/3"></div>
+                    <div class="h-2 bg-slate-100 rounded w-1/3"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- My Tasks -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 fade-in" style="animation-delay:0.2s">
+              <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h2 class="font-bold text-slate-800">My Recent Tasks</h2>
+                <a href="tasks.html" class="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors">View all →</a>
+              </div>
+              <div id="recent-tasks" class="p-4 space-y-2">
+                <div class="flex items-center gap-3 p-3 animate-pulse">
+                  <div class="w-9 h-9 rounded-xl bg-slate-100"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 bg-slate-100 rounded w-3/4"></div>
+                    <div class="h-2 bg-slate-100 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    `);
+
+    initSidebar();
+    initUserNav();
+    loadDashboard();
+
+    function loadDashboard() {
+      // Load projects
+      API.get("/projects").then(function(res) {
+        const projects = res.content.projects || res || [];
+        $("#stat-projects").text(projects.length);
+
+        const $container = $("#recent-projects").empty();
+        if (!projects.length) {
+          $container.html(emptyState("No projects yet", "Create your first project"));
+          return;
+        }
+        projects.slice(0, 5).forEach(function(p) {
+          const colors = ["bg-blue-500","bg-violet-500","bg-emerald-500","bg-amber-500","bg-pink-500"];
+          const color = colors[Math.abs(p.id || 0) % colors.length];
+          $container.append(`
+            <a href="board.html?projectId=${p.id}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
+              <div class="w-9 h-9 ${color} rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0">${(p.name||"P").charAt(0).toUpperCase()}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-700 truncate group-hover:text-blue-600 transition-colors">${p.name || "Untitled"}</p>
+                <p class="text-xs text-slate-400 truncate">${p.description || "No description"}</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-300 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          `);
+        });
+      }).catch(() => $("#recent-projects").html(emptyState("Failed to load projects")));
+
+      // Load tasks
+      API.get("/tasks", { assignedTo: "me", page: 0, size: 5 }).then(function(res) {
+        res = res.content;
+        const tasks = res.tasksList || res || [];
+        $("#stat-tasks").text(res.totalElements || tasks.length);
+
+        const today = new Date().toDateString();
+        const dueToday = tasks.filter(t => t.dueDate && new Date(t.dueDate).toDateString() === today).length;
+        $("#stat-due").text(dueToday);
+
+        const $container = $("#recent-tasks").empty();
+        if (!tasks.length) {
+          $container.html(emptyState("No tasks assigned", "Tasks assigned to you will appear here"));
+          return;
+        }
+        tasks.forEach(function(t) {
+          const overdue = isOverdue(t.dueDate) && t.status !== "DONE";
+          $container.append(`
+            <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-700 truncate">${t.title || "Untitled"}</p>
+                <div class="flex items-center gap-2 mt-1">
+                  ${statusBadge(t.status)}
+                  ${priorityBadge(t.priority)}
+                  ${t.dueDate ? `<span class="text-xs ${overdue?"text-red-500 font-medium":"text-slate-400"}">${formatDate(t.dueDate)}</span>` : ""}
+                </div>
+              </div>
+            </div>
+          `);
+        });
+      }).catch(() => $("#recent-tasks").html(emptyState("Failed to load tasks")));
+    }
+  </script>
+</body>
+</html>
