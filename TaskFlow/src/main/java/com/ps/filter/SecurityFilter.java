@@ -12,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ps.exception.AuthException;
 import com.ps.util.JwtUtil;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -58,7 +57,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 					LOG.debug("Authentication set for user: {}", username);
 				} else {
 					LOG.warn("Invalid token detected: {}", token);
-					throw new AuthException("Jwt Token is invalied");
+					throw new Exception("Jwt Token is invalied");
 				}
 			}
 		} catch (ExpiredJwtException e) {
