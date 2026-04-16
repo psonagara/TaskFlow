@@ -49,15 +49,18 @@ public class AuthServiceImpl implements IAuthService {
 	public LoginResponse login(LoginRequest request) {
 		String email = request.getEmail();
 		String password = request.getPassword();
-		
+
 		if (userRepository.existsByEmail(email)) {
 			User user = userRepository.findByEmail(email).get();
 			if (passwordEncoder.matches(password, user.getPassword())) {
-				String token = jwtUtil.generateToke(user.getEmail());
+				String token = jwtUtil.generateToken(user.getEmail());
 				return new LoginResponse(token, ProjectMappingHelper.toProjectMemberResponse(user));
+			} else {
+				throw new AuthException(IExceptionConstants.WRONG_PASSWORD);
 			}
+		} else {
+			throw new AuthException(IExceptionConstants.LOGIN_FAILED);
 		}
-		throw new AuthException(IExceptionConstants.LOGIN_FAILED);
 	}
-	
+
 }

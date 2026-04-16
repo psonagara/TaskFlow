@@ -19,7 +19,7 @@ public class JwtUtil {
 		return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 	}
 	
-	public String generateToke(String username) {
+	public String generateToken(String username) {
 		return Jwts.builder()
 				.setSubject(username)
 				.setIssuedAt(new Date())

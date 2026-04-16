@@ -3,8 +3,7 @@
  * Shared JS utilities, API helpers, token management
  */
 
-const BASE_URL = "https://taskflow-mmhp.onrender.com/api";
-// const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "http://localhost:8080/api";
 
 // ─── Token Management ────────────────────────────────────────────────────────
 const Auth = {

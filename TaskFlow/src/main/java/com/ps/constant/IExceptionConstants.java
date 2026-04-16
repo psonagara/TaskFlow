@@ -4,6 +4,7 @@ public interface IExceptionConstants {
 
 	String REGISTRATION_FAILED = "Registration Failed";
 	String USER_ALREADY_EXIST = "User already exist for given email";
+	String WRONG_PASSWORD = "Please enter correct password";
 	String LOGIN_FAILED = "Login Failed";
 	String PROJECT_EXIST = "Project Already Exists with given name";
 	String PROJECT_CREATION_FAIL = "Failed To Create new Project";
