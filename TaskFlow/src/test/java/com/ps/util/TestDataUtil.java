@@ -2,9 +2,14 @@ package com.ps.util;
 
 import java.time.LocalDateTime;
 
+import com.ps.dto.request.LoginRequest;
+import com.ps.dto.request.ProjectCreationRequest;
+import com.ps.dto.request.RegisterRequest;
+import com.ps.dto.response.LoginResponse;
 import com.ps.entity.Project;
 import com.ps.entity.ProjectMember;
 import com.ps.entity.User;
+import com.ps.helper.ProjectMappingHelper;
 
 public interface TestDataUtil {
 	
@@ -27,6 +32,38 @@ public interface TestDataUtil {
 		return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJuZWhhLmRlc2FpQHRhc2tmbG93LmluIiwiaWF0IjoxNzc1MzE0OTU5LCJleHAiOjE3NzUzMjU3NTl9.cuUAO-m9WsvFO-VgDkaRKDtEgg44iDjXXppFL1et9_GxvJwaxmZ_0TuAUNgUvS1fRtzkcxs8rg6KRZrv1pxJyA";
 	}
 	
+	public static RegisterRequest getRegisterRequest() {
+		RegisterRequest request = RegisterRequest.builder()
+				.email(TestDataUtil.getUserEmail())
+				.name("Ro Sh")
+				.password("123456")
+				.build();
+		return request;
+	}
+	
+	public static LoginRequest getLoginRequest() {
+		LoginRequest request = LoginRequest.builder()
+				.email(TestDataUtil.getUserEmail())
+				.password("123456")
+				.build();
+		return request;
+	}
+	
+	public static LoginResponse getLoginResponse() {
+		LoginResponse response = new LoginResponse();
+		response.setToken(TestDataUtil.getJwtToken());
+		response.setUser(ProjectMappingHelper.toProjectMemberResponse(getUser()));
+		return response;
+	}
+	
+	
+	public static ProjectCreationRequest getProjectCreationRequest() {
+		ProjectCreationRequest request = new ProjectCreationRequest();
+		request.setName("Alpha One");
+		request.setDescription("This is description of the project Alpha One");
+		return request;
+	}
+	
 	public static Project getProject() {
 		Project project = Project.builder()
 				.id(1L)
@@ -47,5 +84,4 @@ public interface TestDataUtil {
 				.build();
 		return projectMember;
 	}
-	
 }

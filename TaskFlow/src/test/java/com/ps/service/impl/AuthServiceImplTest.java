@@ -27,7 +27,7 @@ import com.ps.util.JwtUtil;
 import com.ps.util.TestDataUtil;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceImplTest {
+class AuthServiceImplTest {
 	
 	@InjectMocks
 	private AuthServiceImpl authService;
@@ -43,7 +43,7 @@ public class AuthServiceImplTest {
 
 	@Test
 	void testRegister() {
-		RegisterRequest request = getRegisterRequest();
+		RegisterRequest request = TestDataUtil.getRegisterRequest();
 		User user = TestDataUtil.getUser();
 		
 		when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
@@ -70,7 +70,7 @@ public class AuthServiceImplTest {
 	
 	@Test
 	void testLogin() {
-		LoginRequest request = getLoginRequest();
+		LoginRequest request = TestDataUtil.getLoginRequest();
 		User user = TestDataUtil.getUser();
 		Optional<User> optional = Optional.of(user);
 		String token = TestDataUtil.getJwtToken();
@@ -99,22 +99,4 @@ public class AuthServiceImplTest {
 		authException = assertThrows(AuthException.class, () -> authService.login(request));
 		assertEquals(IExceptionConstants.LOGIN_FAILED, authException.getMessage());
 	}
-	
-	private RegisterRequest getRegisterRequest() {
-		RegisterRequest request = RegisterRequest.builder()
-				.email(TestDataUtil.getUserEmail())
-				.name("Ro Sh")
-				.password("123456")
-				.build();
-		return request;
-	}
-	
-	private LoginRequest getLoginRequest() {
-		LoginRequest request = LoginRequest.builder()
-				.email(TestDataUtil.getUserEmail())
-				.password("123456")
-				.build();
-		return request;
-	}
-
 }

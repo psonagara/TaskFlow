@@ -50,7 +50,7 @@ class ProjectServiceImplTest {
 	
 	@Test
 	void testCreateProject() {
-		ProjectCreationRequest request = getProjectCreationRequest();
+		ProjectCreationRequest request = TestDataUtil.getProjectCreationRequest();
 		User user = TestDataUtil.getUser();
 		Project project = TestDataUtil.getProject();
 		ProjectMember projectMember = TestDataUtil.getProjectMember();
@@ -130,12 +130,5 @@ class ProjectServiceImplTest {
 		assertEquals(projectMember.getUser().getId(), projectMemberResponse.getId());
 		assertEquals(projectMember.getUser().getName(), projectMemberResponse.getName());
 		assertEquals(projectMember.getUser().getEmail(), projectMemberResponse.getEmail());
-	}
-	
-	private ProjectCreationRequest getProjectCreationRequest() {
-		ProjectCreationRequest request = new ProjectCreationRequest();
-		request.setName("Alpha One");
-		request.setDescription("This is description of the project Alpha One");
-		return request;
 	}
 }
