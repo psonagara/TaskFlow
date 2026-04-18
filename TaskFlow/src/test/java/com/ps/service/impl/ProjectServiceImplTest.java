@@ -82,6 +82,9 @@ class ProjectServiceImplTest {
 		//project already exists with give name
 		projectException = assertThrows(ProjectException.class, () -> projectService.createProject(request));
 		assertEquals(IExceptionConstants.PROJECT_EXIST, projectException.getMessage());
+		
+		if (!mockStatic.isClosed())
+			mockStatic.close();
 	}
 	
 	@Test

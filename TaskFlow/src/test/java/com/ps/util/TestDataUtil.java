@@ -1,14 +1,24 @@
 package com.ps.util;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import org.springframework.data.domain.PageRequest;
 
 import com.ps.dto.request.LoginRequest;
 import com.ps.dto.request.ProjectCreationRequest;
 import com.ps.dto.request.RegisterRequest;
+import com.ps.dto.request.TaskCreationRequest;
+import com.ps.dto.request.TaskRequest;
 import com.ps.dto.response.LoginResponse;
+import com.ps.entity.Comment;
 import com.ps.entity.Project;
 import com.ps.entity.ProjectMember;
+import com.ps.entity.SubTask;
+import com.ps.entity.Task;
 import com.ps.entity.User;
+import com.ps.enu.TaskPriority;
+import com.ps.enu.TaskStatus;
 import com.ps.helper.ProjectMappingHelper;
 
 public interface TestDataUtil {
@@ -83,5 +93,67 @@ public interface TestDataUtil {
 				.joinedAt(LocalDateTime.now())
 				.build();
 		return projectMember;
+	}
+	
+	public static TaskCreationRequest getTaskCreationRequest() { 
+		TaskCreationRequest request = new TaskCreationRequest();
+		request.setTitle("Design HomePage");
+		request.setDescription("Here comes description of home page");
+		request.setPriority(TaskPriority.LOW);
+		request.setStatus(TaskStatus.TODO);
+		request.setAssignedToId(1L);
+		request.setDueDate(LocalDate.now().plusDays(4));
+		request.setProjectId(1L);
+		return request;
+	}
+	
+	public static TaskRequest getTaskRequest() { 
+		TaskRequest request = TaskRequest.builder()
+				.projectId(1L)
+				.assignedTo("me")
+				.status(TaskStatus.TODO)
+				.priority(TaskPriority.LOW)
+				.dueDate(LocalDate.now().plusDays(4))
+				.search("Home")
+				.pageable(getPageable())
+				.build();
+		return request;
+	}
+	
+	public static PageRequest getPageable() {
+		return PageRequest.of(0, 10);
+	}
+	
+	public static Task getTask() {
+		Task task = Task.builder()
+				.id(1L)
+				.title("Design HomePage")
+				.description("Here comes description of home page")
+				.dueDate(LocalDate.now().plusDays(4))
+				.project(getProject())
+				.assignedTo(getUser())
+				.createdBy(getUser())
+				.createdAt(LocalDateTime.now())
+				.build();
+		return task;
+	}
+	
+	public static SubTask getSubTask() { 
+		SubTask subTask = new SubTask();
+		subTask.setId(1L);
+		subTask.setTitle("To do Figma Design");
+		subTask.setTask(getTask());
+		subTask.setCreatedAt(LocalDateTime.now());
+		return subTask;
+	}
+	
+	public static Comment getComment() {
+		Comment comment = new Comment();
+		comment.setId(1L);
+		comment.setContent("Please assigned to relevant team");
+		comment.setTask(getTask());
+		comment.setUser(getUser());
+		comment.setCreatedAt(LocalDateTime.now());
+		return comment;
 	}
 }

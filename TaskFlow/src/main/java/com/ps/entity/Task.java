@@ -24,7 +24,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(indexes = {
@@ -35,6 +38,9 @@ import lombok.Data;
 		@Index(name = "idx_tasks_due_date", columnList = "due_date")
 })
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Task {
 
 	@Id
